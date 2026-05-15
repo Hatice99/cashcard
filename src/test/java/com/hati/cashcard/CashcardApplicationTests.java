@@ -8,19 +8,20 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.jdbc.Sql;
-
+import org.springframework.test.annotation.DirtiesContext;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.annotation.DirtiesContext.*;
 
 import java.net.URI;
 //integration test for the whole application, use random port to avoid conflict
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD) //reset the database after each test method, so that tests do not interfere with each other
+
 class CashCardApplicationTests {
     @Autowired //injects TestRestTemplate instance automatically
     TestRestTemplate restTemplate; //simulates a client sending HTTP requests to the application and receiving responses
 
     @Test
-    @Sql(scripts = "/com/hati/cashcard/data.sql")
     void shouldReturnACashCardWhenDataIsSaved() {
         //simulates a GET request to /cashcards/99
         ResponseEntity<String> response = restTemplate.getForEntity("/cashcards/99", String.class);
