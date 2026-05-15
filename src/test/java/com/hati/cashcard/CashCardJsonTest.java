@@ -15,24 +15,39 @@ import org.springframework.boot.test.json.JacksonTester;
 class CashCardJsonTest {
 
     @Autowired
-    private JacksonTester<CashCard> json;
+    private JacksonTester<CashCard> json; // helper for Json testing, for single object
 
     @Autowired
-    private JacksonTester<CashCard[]> jsonList;
+    private JacksonTester<CashCard[]> jsonList;// helper for Json testing, for list of objects
 
     private CashCard[] cashCards;
 
     @BeforeEach
     void setUp() {
-        cashCards = Arrays.array(
+        cashCards = new CashCard[] {
                 new CashCard(99L, 123.45),
                 new CashCard(100L, 1.00),
-                new CashCard(101L, 150.00));
+                new CashCard(101L, 150.00)
+        };
     }
 
     @Test
+    // java to json
     void cashCardListSerializationTest() throws IOException {
         assertThat(jsonList.write(cashCards)).isStrictlyEqualToJson("list.json");
+    }
+
+    @Test
+    // json to java
+    void cashCardListDeserializationTest() throws IOException {
+        String expected = """
+                [
+                   { "id": 99, "amount": 123.45 },
+                   { "id": 100, "amount": 1.00 },
+                   { "id": 101, "amount": 150.00 }
+                ]
+                """;
+        assertThat(jsonList.parse(expected)).isEqualTo(cashCards);
     }
 
 }
