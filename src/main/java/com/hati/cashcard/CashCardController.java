@@ -30,12 +30,15 @@ class CashCardController {
         this.cashCardRepository = cashCardRepository;
     }
 
+    private CashCard findCashCard(Long requestedId, Principal principal) {
+        return cashCardRepository.findByIdAndOwner(requestedId, principal.getName());
+    }
+
     @GetMapping("/{requestedId}")
     private ResponseEntity<CashCard> findById(@PathVariable Long requestedId, Principal principal) {
-        Optional<CashCard> cashCardOptional = Optional
-                .ofNullable(cashCardRepository.findByIdAndOwner(requestedId, principal.getName()));
-        if (cashCardOptional.isPresent()) {
-            return ResponseEntity.ok(cashCardOptional.get());
+        CashCard cashCard = findCashCard(requestedId, principal);
+        if (cashCard != null) {
+            return ResponseEntity.ok(cashCard);
         } else {
             return ResponseEntity.notFound().build();
         }
@@ -71,11 +74,13 @@ class CashCardController {
     }
 
     @PutMapping("/{requestedId}")
-    // update the amount of a cash card, only if the authenticated user is the owner of the cash card
+    // update the amount of a cash card, only if the authenticated user is the owner
+    // of the cash card
     private ResponseEntity<Void> putCashCard(@PathVariable Long requestedId, @RequestBody CashCard cashCardUpdate,
             Principal principal) {
-        CashCard cashCard = cashCardRepository.findByIdAndOwner(requestedId, principal.getName());
-        // if cash card exists and the owner is the authenticated user, update the cash card with the new amount and save it to the database
+        CashCard cashCard = findCashCard(requestedId, principal);
+        // if cash card exists and the owner is the authenticated user, update the cash
+        // card with the new amount and save it to the database
         if (cashCard != null) {
             CashCard updatedCashCard = new CashCard(cashCard.id(), cashCardUpdate.amount(), principal.getName());
             cashCardRepository.save(updatedCashCard);
