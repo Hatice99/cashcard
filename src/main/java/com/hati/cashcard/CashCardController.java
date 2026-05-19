@@ -92,7 +92,6 @@ class CashCardController {
 
     @DeleteMapping("/{id}")
     private ResponseEntity<Void> deleteCashCard(@PathVariable Long id, Principal principal) {
-        CashCard cashCard = findCashCard(id, principal);
         //why existByIdAndOwner? because we want to return not too much information
         if (!cashCardRepository.existsByIdAndOwner(id, principal.getName())) {
         return ResponseEntity.notFound().build();
