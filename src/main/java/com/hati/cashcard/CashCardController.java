@@ -5,6 +5,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -87,5 +88,16 @@ class CashCardController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
+    }
+
+    @DeleteMapping("/{id}")
+    private ResponseEntity<Void> deleteCashCard(@PathVariable Long id, Principal principal) {
+        CashCard cashCard = findCashCard(id, principal);
+        //why existByIdAndOwner? because we want to return not too much information
+        if (!cashCardRepository.existsByIdAndOwner(id, principal.getName())) {
+        return ResponseEntity.notFound().build();
+    }
+        cashCardRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }

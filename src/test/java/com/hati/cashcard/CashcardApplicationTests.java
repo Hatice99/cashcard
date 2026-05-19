@@ -161,7 +161,10 @@ class CashCardApplicationTests {
     }
 
     @Test
-    @DirtiesContext
+    @DirtiesContext // reset the database after this test method, so that it does not interfere with
+                    //
+                    //
+                    // other tests
     // PUT - update data - GET - verify data
     void shouldUpdateAnExistingCashCard() {
         CashCard cashCardUpdate = new CashCard(null, 19.99, null); // new amount
@@ -196,7 +199,7 @@ class CashCardApplicationTests {
     }
 
     @Test
-    // trying to update a cash card that is owned by someone else 
+    // trying to update a cash card that is owned by someone else
     void shouldNotUpdateACashCardThatIsOwnedBySomeoneElse() {
         CashCard kumarsCard = new CashCard(null, 333.33, null);
         HttpEntity<CashCard> request = new HttpEntity<>(kumarsCard);
@@ -204,6 +207,28 @@ class CashCardApplicationTests {
                 .withBasicAuth("sarah1", "abc123")
                 .exchange("/cashcards/102", HttpMethod.PUT, request, Void.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    @DirtiesContext // whenever database is modified, use this
+    void shouldDeleteAnExistingCashCard() {
+        ResponseEntity<Void> response = restTemplate
+                .withBasicAuth("sarah1", "abc123")
+                .exchange("/cashcards/99", HttpMethod.DELETE, null, Void.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+
+        ResponseEntity<String> getResponse = restTemplate
+                .withBasicAuth("sarah1", "abc123")
+                .getForEntity("/cashcards/99", String.class);
+        assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void shouldNotDeleteACashCardThatDoesNotExist() {
+        ResponseEntity<Void> deleteResponse = restTemplate
+                .withBasicAuth("sarah1", "abc123")
+                .exchange("/cashcards/99999", HttpMethod.DELETE, null, Void.class);
+        assertThat(deleteResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
 }
